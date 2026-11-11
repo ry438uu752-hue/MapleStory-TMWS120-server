@@ -4,10 +4,10 @@
 
 ## 來源與致謝
 
-本專案是合併以下兩者而成：
+本專案的**程式碼主體是將 `TMS120.jar` 反編譯後合併而成**，專案架構則沿用 dreamMS120：
 
-- **伺服器架構**：[v3921358/dreamMS120](https://github.com/v3921358/dreamMS120)（dreamMS120 專案結構與程式碼基礎）
-- **`TMS120.jar` 反編譯**：參考[楓之谷單機 V120 伺服架設一鍵安裝](https://www.youtube.com/watch?v=dZ_HLgqxVcQ&t=165s) 影片中的流程，將伺服器 JAR 反編譯後合併進此架構。
+- **程式碼主體**：`TMS120.jar` 反編譯（反編譯與架設流程參考[楓之谷單機 V120 伺服架設一鍵安裝](https://www.youtube.com/watch?v=dZ_HLgqxVcQ&t=165s)）。`src/` 就是反編譯後修正到可編譯的結果（324 個 `.java`／754 個 `.class`），並非直接使用 dreamMS120 的原始碼。
+- **專案架構／建置**：[v3921358/dreamMS120](https://github.com/v3921358/dreamMS120)（目錄結構、`Launcher.bat`、`lib` 依賴與腳本配置）。
 
 合併後另外處理了：CFR 反編譯造成的型別／語法問題、以 JDK 8 重新編譯（754 個 class），以及購物商城 error code 38 的 `MapleAESOFB.crypt` 修正（詳見下方「修正紀錄」）。
 
