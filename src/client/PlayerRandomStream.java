@@ -1,0 +1,106 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
+package client;
+
+import server.Randomizer;
+import tools.data.output.MaplePacketLittleEndianWriter;
+
+public class PlayerRandomStream {
+    private transient long seed1;
+    private transient long seed2;
+    private transient long seed3;
+    private transient long seed1_;
+    private transient long seed2_;
+    private transient long seed3_;
+    private transient long seed1__;
+    private transient long seed2__;
+    private transient long seed3__;
+    private transient long seed1___;
+    private transient long seed2___;
+    private transient long seed3___;
+
+    public PlayerRandomStream() {
+        int v4 = 5;
+        this.CRand32__Seed(Randomizer.nextLong(), 803157710L, 803157710L);
+    }
+
+    public final void CRand32__Seed(long s1, long s2, long s3) {
+        this.seed1 = s1 | 0x100000L;
+        this.seed2 = s2 | 0x1000L;
+        this.seed3 = s3 | 0x10L;
+        this.seed1_ = s1 | 0x100000L;
+        this.seed2_ = s2 | 0x1000L;
+        this.seed3_ = s3 | 0x10L;
+        this.seed1__ = s1 | 0x100000L;
+        this.seed2__ = s2 | 0x1000L;
+        this.seed3__ = s3 | 0x10L;
+    }
+
+    public final long CRand32__Random() {
+        long v4 = this.seed1;
+        long v5 = this.seed2;
+        long v6 = this.seed3;
+        long v7 = this.seed1;
+        long v8 = (v4 & 0xFFFFFFFFFFFFFFFEL) << 12 ^ (v7 & 0x7FFC0L ^ v4 >> 13) >> 6;
+        long v9 = 16L * (v5 & 0xFFFFFFFFFFFFFFF8L) ^ (v5 >> 2 ^ v5 & 0x3F800000L) >> 23;
+        long v10 = (v6 & 0xFFFFFFFFFFFFFFF0L) << 17 ^ (v6 >> 3 ^ v6 & 0x1FFFFF00L) >> 8;
+        this.seed3_ = v10 & 0xFFFFFFFFL;
+        this.seed1_ = v8 & 0xFFFFFFFFL;
+        this.seed2_ = v9 & 0xFFFFFFFFL;
+        return (v8 ^ v9 ^ v10) & 0xFFFFFFFFL;
+    }
+
+    public final long CRand32__Random_Character() {
+        long v4 = this.seed1_;
+        long v5 = this.seed2_;
+        long v6 = this.seed3_;
+        long v7 = this.seed1_;
+        long v8 = (v4 & 0xFFFFFFFFFFFFFFFEL) << 12 ^ (v7 & 0x7FFC0L ^ v4 >> 13) >> 6;
+        long v9 = 16L * (v5 & 0xFFFFFFFFFFFFFFF8L) ^ (v5 >> 2 ^ v5 & 0x3F800000L) >> 23;
+        long v10 = (v6 & 0xFFFFFFFFFFFFFFF0L) << 17 ^ (v6 >> 3 ^ v6 & 0x1FFFFF00L) >> 8;
+        this.seed3_ = v10 & 0xFFFFFFFFL;
+        this.seed1_ = v8 & 0xFFFFFFFFL;
+        this.seed2_ = v9 & 0xFFFFFFFFL;
+        return (v8 ^ v9 ^ v10) & 0xFFFFFFFFL;
+    }
+
+    public final long CRand32__Random_CheckDamageMiss() {
+        long v4 = this.seed1__;
+        long v5 = this.seed2__;
+        long v6 = this.seed3__;
+        long v7 = this.seed1__;
+        long v8 = (v4 & 0xFFFFFFFFFFFFFFFEL) << 12 ^ (v7 & 0x7FFC0L ^ v4 >> 13) >> 6;
+        long v9 = 16L * (v5 & 0xFFFFFFFFFFFFFFF8L) ^ (v5 >> 2 ^ v5 & 0x3F800000L) >> 23;
+        long v10 = (v6 & 0xFFFFFFFFFFFFFFF0L) << 17 ^ (v6 >> 3 ^ v6 & 0x1FFFFF00L) >> 8;
+        this.seed3_ = v10 & 0xFFFFFFFFL;
+        this.seed1_ = v8 & 0xFFFFFFFFL;
+        this.seed2_ = v9 & 0xFFFFFFFFL;
+        return (v8 ^ v9 ^ v10) & 0xFFFFFFFFL;
+    }
+
+    public final long CRand32__Random_ForMonster() {
+        long v4 = this.seed1___;
+        long v5 = this.seed2___;
+        long v6 = this.seed3___;
+        long v7 = this.seed1___;
+        long v8 = (v4 & 0xFFFFFFFFFFFFFFFEL) << 12 ^ (v7 & 0x7FFC0L ^ v4 >> 13) >> 6;
+        long v9 = 16L * (v5 & 0xFFFFFFFFFFFFFFF8L) ^ (v5 >> 2 ^ v5 & 0x3F800000L) >> 23;
+        long v10 = (v6 & 0xFFFFFFFFFFFFFFF0L) << 17 ^ (v6 >> 3 ^ v6 & 0x1FFFFF00L) >> 8;
+        this.seed3_ = v10 & 0xFFFFFFFFL;
+        this.seed1_ = v8 & 0xFFFFFFFFL;
+        this.seed2_ = v9 & 0xFFFFFFFFL;
+        return (v8 ^ v9 ^ v10) & 0xFFFFFFFFL;
+    }
+
+    public final void connectData(MaplePacketLittleEndianWriter mplew) {
+        long v5 = this.CRand32__Random();
+        long s2 = this.CRand32__Random();
+        long v6 = this.CRand32__Random();
+        this.CRand32__Seed(v5, s2, v6);
+        mplew.writeInt((int)v5);
+        mplew.writeInt((int)s2);
+        mplew.writeInt((int)v6);
+    }
+}
+

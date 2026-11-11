@@ -1,0 +1,20 @@
+# 遊戲資料（版權資源，請自備；本專案以 junction 連結）
+wz/
+
+# 建置產物
+out/
+
+# IDE
+.idea/
+*.iml
+
+# 執行紀錄
+Logs/
+*.log
+
+# 備份檔
+*.bak
+*.bak-*
+
+# 暫存診斷檔
+cs_cfg.txt
