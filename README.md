@@ -60,6 +60,7 @@ java -Xmx512M -server -Dnet.sf.odinms.wzpath=wz -cp "dist\TMS120.jar;dist\lib\*"
 
 ## 還原說明
 
+- **反編譯來源影片**：[楓之谷單機 V120 伺服架設一鍵安裝](https://www.youtube.com/watch?v=dZ_HLgqxVcQ&t=165s)（`TMS120.jar` 反編譯與架設流程）
 - 反編譯工具：CFR 0.152。
 - 已修正 CFR 產生的型別與語法問題（`int` → `short`/`byte` 建構子轉型、`WeakReference`/`Iterator`/`Map.Entry` 泛型、`AdminCommand` 內部 `Map` 與 `java.util.Map.Entry` 的名稱衝突、未初始化區域變數、破損迴圈與 `goto` 等）。
 - 以 JDK 8 編譯結果：**0 error，754 個 .class**，與原 `TMS120.jar` 的 class 數量相同。
