@@ -67,6 +67,100 @@ java -Xmx512M -server -Dnet.sf.odinms.wzpath=wz -cp "dist\TMS120.jar;dist\lib\*"
 > `C:\Users\ry438\Downloads\v120\v120伺服安裝\MMSv120伺服器\wz`。
 > 若要搬移專案，請把該 wz 資料夾複製過來，或重新建立 junction。
 
+## Java 21 實驗分支（`java21`）
+
+`main` 分支維持 JDK 8（穩定的版本）。`java21` 分支是「在 Java 21 上跑」的概念驗證（POC），
+**不需要修改任何伺服器邏輯程式碼**，只補上腳本引擎與一個腳本修正。
+
+### 為什麼可以幾乎無痛升級
+
+TMS120 的程式碼與 2499 個腳本都沒有用到 Java 9+ 移除的 API：
+
+| 檢查項目 | 結果 |
+|---|---|
+| `SecurityManager`、`sun.misc.*`、`Thread.stop`、`javax.xml.bind`、`finalize()` | 0 處 |
+| 腳本使用 `Java.type` / `Java.extend` / `JavaImporter`（GraalJS 才需要改寫的語法） | 0 處 |
+| 腳本使用 `importPackage` / `Packages.*`（Nashorn 專屬語法） | 156 處 |
+| 依賴 Nashorn 的原始碼 | 只有 `AbstractScriptManager` 的 `getEngineByName("nashorn")` |
+
+因為腳本大量使用 `importPackage` / `Packages.*`，**不能改用 GraalJS**（會需要改寫全部腳本）。
+本分支採用 [openjdk/nashorn](https://github.com/openjdk/nashorn)（Nashorn 的官方延續版），
+它會註冊同名的 `nashorn` 引擎，因此 `AbstractScriptManager` 一行都不用改。
+
+### 分支內容
+
+```
+lib/ 與 dist/lib/ 新增（執行期需要）
+├─ nashorn-core-15.4.jar        # Nashorn 引擎（Java 15+ 的替代品）
+├─ asm-7.3.1.jar                # nashorn-core 的相依
+├─ asm-analysis-7.3.1.jar
+├─ asm-commons-7.3.1.jar
+├─ asm-tree-7.3.1.jar
+└─ asm-util-7.3.1.jar
+
+Launcher-java21.bat             # Java 21 啟動腳本（可用 JAVA21_HOME 指定 JRE）
+Libs/scripts/npc/2040043.js     # 修正：見下方「大陣列字面量」
+```
+
+### 執行（Java 21）
+
+```bat
+set JAVA21_HOME=C:\path\to\jdk-21
+Launcher-java21.bat
+```
+
+等同於：
+
+```bat
+java -Xmx512M -Dnet.sf.odinms.wzpath=wz -Dfile.encoding=UTF8 ^
+  -cp ".;dist\TMS120.jar;dist\lib\*" server.Start
+```
+
+> classpath 必須明確寫出 `dist\lib\*`。`TMS120.jar` 的 manifest `Class-Path` 不含新加入的 jar，
+> 只寫 `dist\*` 也不會包含子目錄。
+
+### 相容性驗證
+
+| 項目 | 結果 |
+|---|---|
+| 啟動（Corretto 21.0.12.1） | 正常：8484／8586／8587／8596 全部 listening，無例外 |
+| MySQL（`mysql-connector-java` 5.1.12） | 正常，不需換 driver |
+| Apache MINA 1.1.7 | 正常（常數池掃描無 `sun.misc` 等移除 API） |
+| 2499 個 `.js` 腳本逐一 eval | Java 21：**2491 成功 / 8 失敗**，與 JDK 8 **完全相同的失敗清單** |
+
+### 大陣列字面量（`npc/2040043.js`）
+
+這是 Java 21 唯一多出來的失敗：`AssertionError: Failed generating bytecode for <eval>:136`。
+
+`npc/2040043.js`（LudiPQ 8 階段的藍色氣球）用一個 126 × 9 的 `Array(Array(...), ...)` 巢狀字面量
+直接寫在單一運算式裡。JDK 8 的 Nashorn 勉強能編譯，新版 Nashorn（15.4／15.7）的位元組碼產生器
+在這種大小會失敗。
+
+修正：把同一個陣列拆成 3 段 `concat`（資料完全相同、順序不變，仍是整數陣列）：
+
+```js
+var stage8combos = Array(
+  Array(0,0,0,0,1,1,1,1,1),
+  ...  // 前 42 列
+);
+stage8combos = stage8combos.concat(Array(
+  ...  // 中 42 列
+));
+stage8combos = stage8combos.concat(Array(
+  ...  // 後 42 列
+));
+```
+
+修正後 Java 21 的腳本測試結果與 JDK 8 一致（2491 / 2499，剩下 8 個是原本就存在的
+Big5 編碼／殘缺語法問題，兩個 JDK 都一樣失敗）。
+
+### 尚未處理（不影響啟動）
+
+- `local_policy.jar` / `US_export_policy.jar`：Java 8 時代的 JCE 政策檔，Java 21 不需要，
+  但保留也不會出錯。
+- `mysql-connector-java` 5.1.12、`slf4j` 1.5.0、`mina-core` 1.1.7 皆維持原版本（實測可用）。
+- 尚未升級為 Java 21 語法（record／switch expression）或模組化；本分支目標只是「能跑」。
+
 ## 還原說明
 
 - **反編譯來源影片**：[楓之谷單機 V120 伺服架設一鍵安裝](https://www.youtube.com/watch?v=dZ_HLgqxVcQ&t=165s)（`TMS120.jar` 反編譯與架設流程）
@@ -123,3 +217,6 @@ C:\Program Files\Java\jdk1.8.0_202\bin\java.exe
 
 若你的系統 `PATH` 中的 `java` 是 17／21，直接執行 `java ... server.Start` 就會踩到這個問題。
 請關閉舊的伺服器視窗，改用本專案的 `Launcher.bat` 重新啟動。
+
+若要在 Java 21 上執行，請改用 `java21` 分支（已內建 `nashorn-core` 與 `Launcher-java21.bat`），
+詳見上方「Java 21 實驗分支」。
